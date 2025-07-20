@@ -25,3 +25,9 @@ func (a *App) startup(ctx context.Context) {
 func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
 }
+
+func (a *App) LoadProjects() ([]string, error) {
+	return nil, fmt.Errorf("LoadProjects not implemented yet")
+	// projects := []string{"Project A", "Project B", "Project C"}
+	// return projects, nil
+}
