@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Github, Linkedin, Globe } from "lucide-react"
+import { Github, Linkedin, Globe, AlertCircleIcon } from "lucide-react"
 import {
   Select,
   SelectContent,
@@ -23,16 +23,49 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-
-const projects = [
-  "Project 1",
-  "Project 2",
-  "Project 3",
-];
+import { useEffect, useState } from "react"
+import { LoadProjects } from "../../wailsjs/go/main/App"
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
 
 export function HomeForm() {
+
+  useEffect(() => {
+    void loadProjects();
+  }, []);
+
+  const [error, setError] = useState<string>("");
+  const [projects, setProjects] = useState<string[]>([]);
+  const [isLoading, setLoading] = useState(true);
+
+  const loadProjects = async () => {
+    setLoading(true);
+    LoadProjects()
+      .then((loadedProjects: string[]) => {
+        setProjects(loadedProjects);
+        setError("");
+      })
+      .catch((error: Error) => {
+        setError(`${error}`);
+        setProjects([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
   return (
     <div className="flex w-full max-w-sm flex-col gap-6">
+      { error && (
+      <Alert variant="destructive">
+        <AlertCircleIcon />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>
+          <p>{error}</p>
+        </AlertDescription>
+      </Alert>
+      )}
+      { !isLoading && (
+      <>
       <Tabs defaultValue={projects.length > 0 ? "projects" : "new_project"}>
         <TabsList>
           {projects.length > 0 && ( 
@@ -119,6 +152,8 @@ export function HomeForm() {
           LinkedIn
         </a>
       </div>
+      </>
+      )}
     </div>
     
   )
