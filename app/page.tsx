@@ -32,6 +32,8 @@ declare global {
 
 export default function Home() {
   const [projects, setProjects] = useState<string[] | null>(null);
+  const [newProjectName, setNewProjectName] = useState('');
+  const [newProjectNameError, setNewProjectNameError] = useState('');
 
   useEffect(() => {
     window.electron.getAppDataPath().then(path => {
@@ -43,6 +45,19 @@ export default function Home() {
       console.log("projects", projects);
     });
   }, []);
+
+  const createNewProject = () => {
+    const regex = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/;
+    if (!regex.test(newProjectName)) {
+      setNewProjectNameError(`Invalid name. 
+- Must start and end with a letter or digit. 
+- Only letters, digits, and "-" are allowed in between. 
+- Single letters or digits are allowed.`);
+      return;
+    }
+
+    setNewProjectNameError('');
+  };
 
   if (projects === null) return <Loading/>;
   
@@ -93,11 +108,20 @@ export default function Home() {
             <CardContent className="grid gap-6">
               <div className="grid gap-3">
                 <Label htmlFor="new-project-name">Name</Label>
-                <Input id="new-project-name" type="text" />
+                <Input 
+                  id="new-project-name" 
+                  type="text" 
+                  value={newProjectName}
+                  onChange={e => setNewProjectName(e.target.value)}
+                  className={newProjectNameError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''}
+                />
+                {newProjectNameError && 
+                  <div className="text-red-600 text-sm mt-1 whitespace-pre-line">{newProjectNameError}</div>
+                }
               </div>
             </CardContent>
             <CardFooter>
-              <Button>Create</Button>
+              <Button onClick={createNewProject}>Create</Button>
             </CardFooter>
           </Card>
         </TabsContent>
