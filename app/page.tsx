@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -16,13 +18,39 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useEffect, useState } from "react"
+import Loading from "@/components/loading";
+
+declare global {
+  interface Window {
+    electron: {
+      getProjects: () => Promise<string[]>;
+      getAppDataPath: () => Promise<string>;
+    };
+  }
+}
 
 export default function Home() {
+  const [projects, setProjects] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    window.electron.getAppDataPath().then(path => {
+      console.log("path", path);
+    });
+
+    window.electron.getProjects().then(projects => {
+      setProjects(projects);
+      console.log("projects", projects);
+    });
+  }, []);
+
+  if (projects === null) return <Loading/>;
+  
   return (
     <div className="flex items-center justify-center min-h-screen light:bg-gray-100">
-      <Tabs defaultValue="projects">
+      <Tabs defaultValue={projects.length > 0 ? "projects" : "new"}>
         <TabsList>
-          <TabsTrigger value="projects">Your projects</TabsTrigger>
+          <TabsTrigger value="projects" disabled={projects.length === 0}>Your projects</TabsTrigger>
           <TabsTrigger value="new">Create a new project</TabsTrigger>
         </TabsList>
         <TabsContent value="projects">
@@ -41,8 +69,9 @@ export default function Home() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectItem value="project-1">Project 1</SelectItem>
-                      <SelectItem value="project-2">Project 2</SelectItem>
+                      {projects.map(project => (
+                        <SelectItem key={project} value={project}>{project}</SelectItem>
+                      ))}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
